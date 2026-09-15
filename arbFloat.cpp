@@ -11,8 +11,13 @@ int misc_debugging = 0;
 
 int prec = MAX_PREC - 5;
 
+//Need to add functionality to change how the numbers are displayed
+//0 = scientific notation, 1 = fixed point notation
+int display_type = 0;
+
 
 //Vector functions
+
 vector<int> vec_truncate(vector<int> vec, int exp){
     int size = vec.size();
     int store = vec.size() - 1;
@@ -253,6 +258,7 @@ arbFloat::arbFloat(int p, long long int num){
     }
 }
 
+//Takes an input of a string using fixed point notation
 arbFloat::arbFloat(int p, string s){
     if (p > prec){
         throw invalid_argument("Precision p = " + to_string(p) + " is too large for the current maximum precision. PREC = " + to_string(prec));
@@ -274,7 +280,7 @@ arbFloat::arbFloat(int p, string s){
             i = 0;
             numSize = num.size();
         }
-        else if (num[i] == 46){
+        else if (num[i] == '.'){
             expVal = i;
             i = numSize;
         }
@@ -301,117 +307,121 @@ arbFloat::arbFloat(int p, string s){
     
     digits = v;
 }
-
+//Updated to use scientific notation instead of fixed point notation. This allows for very small numbers to be initialized properly.
 arbFloat::arbFloat(int p, double d){
     arbFloat::initialize();
-    string s = to_string(d);
-    char end = s.back();
-    while (end == '0'){
-        s.pop_back();
-        end = s.back();
-    }
-    int strSize = s.size();
-    int expVal = strSize;
 
-    for (int i = 0; i < strSize; i++){
-        if (s[i] == 46){
-            expVal = i;
-            i = strSize;
-        }
-    }
-    if (expVal != strSize){
-        s.erase(expVal, 1);
-        strSize = s.size();
-    }
+    ostringstream s1;
+    s1 << setprecision(15) << scientific << d;
+    string s = s1.str();
 
-    char beg = s[0];
-    if (beg == '-'){
+    if (s[0] == '-'){
         sign = 1;
         s.erase(0,1);
-        strSize = s.size();
-        expVal -= 1;
-    }
-    beg = s[0];
-    strSize = s.size();
-    while(beg == '0' && strSize > 1){
-        s.erase(0,1);
-        expVal -= 1;
-        beg = s[0];
-        strSize = s.size();
     }
 
-    if (p < strSize){
-        throw invalid_argument("Precision " + to_string(p) + " is too small for the number " + s + ".\nError occured when trying to initalize an arbFloat with the double value " + s);
+    exp = 0;
+    char c = s[s.size() - 1];
+    int start = 1;
+    while (c != 'e' && c != '-' && c!= '+'){
+        exp += start * (c - '0');
+        start *= 10;
+        s.pop_back();
+        c = s[s.size() - 1];
     }
+
+    int expSign = 1;
+    if (s[s.size() - 1] == '-'){
+        expSign = -1;
+        s.pop_back();
+    }
+    else if (s[s.size() - 1] == '+'){
+        expSign = 1;
+        s.pop_back();
+    }
+    exp = exp * expSign;
+
+    if (s[s.size() - 1] == 'e'){
+        s.pop_back();
+    }
+
+    s.erase(1,1);
+
+    while (s.size() > 1 && s.back() == '0'){
+        s.pop_back();
+    }
+    
+    int numSize = s.size();
+    if (p < numSize){
+        throw invalid_argument("Precision " + to_string(p) + " is too small for the number " + s1.str());
+    }
+
 
     vector<int> v(p);
-
-
-    for(int i = 0; i < strSize; i++){
-        char character = s[i];
-        int nextDigit = character - '0';
-        v[i] = nextDigit;
+    for (int i = 0; i < s.size(); i++){
+        v[i] = s[i] - '0';
     }
+
     digits = v;
-    exp = expVal - 1;
 }
 
-// Need to fix issue with machine epsilon
+arbFloat::arbFloat(int p, float f){
+        arbFloat::initialize();
 
-// arbFloat::arbFloat(int p, float f){
-//     double newf = f;
-//     string s = to_string(newf);
-//     char end = s.back();
-//     while (end == '0'){
-//         s.pop_back();
-//         end = s.back();
-//     }
-//     int strSize = s.size();
-//     int expVal = strSize;
+    ostringstream s1;
+    s1 << setprecision(6) << scientific << f;
+    string s = s1.str();
 
-//     for (int i = 0; i < strSize; i++){
-//         if (s[i] == 46){
-//             expVal = i;
-//             i = strSize;
-//         }
-//     }
-//     if (expVal != strSize){
-//         s.erase(expVal, 1);
-//         strSize = s.size();
-//     }
+    if (s[0] == '-'){
+        sign = 1;
+        s.erase(0,1);
+    }
 
-//     char beg = s[0];
-//     if (beg == '-'){
-//         sign = 1;
-//         s.erase(0,1);
-//         strSize = s.size();
-//         expVal -= 1;
-//     }
-//     beg = s[0];
-//     strSize = s.size();
-//     while(beg == '0' && strSize > 1){
-//         s.erase(0,1);
-//         expVal -= 1;
-//         beg = s[0];
-//         strSize = s.size();
-//     }
-
-//     if (p < strSize){
-//         throw invalid_argument("Precision " + to_string(p) + " is too small for the number " + s + ".\nError occured when trying to initalize an arbFloat with the double value " + s);
-//     }
-
-//     vector<int> v(p);
+    exp = 0;
+    char c = s[s.size() - 1];
+    int start = 1;
+    while (c != 'e' && c != '-' && c!= '+'){
+        exp += start * (c - '0');
+        start *= 10;
+        s.pop_back();
+        c = s[s.size() - 1];
+    }
 
 
-//     for(int i = 0; i < strSize; i++){
-//         char character = s[i];
-//         int nextDigit = character - '0';
-//         v[i] = nextDigit;
-//     }
-//     digits = v;
-//     exp = expVal - 1;
+    int expSign = 1;
+    if (s[s.size() - 1] == '-'){
+        expSign = -1;
+        s.pop_back();
+    }
+    else if (s[s.size() - 1] == '+'){
+        expSign = 1;
+        s.pop_back();
+    }
+    exp = exp * expSign;
 
-// }
+    if (s[s.size() - 1] == 'e'){
+        s.pop_back();
+    }
+
+    s.erase(1,1);
+
+    while (s.size() > 1 && s.back() == '0'){
+        s.pop_back();
+    }
+    
+    int numSize = s.size();
+    if (p < numSize){
+        throw invalid_argument("Precision " + to_string(p) + " is too small for the number " + s1.str());
+    }
+
+
+    vector<int> v(p);
+    for (int i = 0; i < s.size(); i++){
+        v[i] = s[i] - '0';
+    }
+
+    digits = v;
+}
 
 arbFloat::arbFloat(int p, long double d){
     arbFloat::initialize();
@@ -482,6 +492,8 @@ arbFloat::arbFloat(const arbFloat& x){
 const arbFloat arbFloat::ZERO(1,0);
 const arbFloat arbFloat::ONE(1,1);
 const arbFloat arbFloat::TWO(1,2);
+// const arbFloat arbFloat::PI = gen_PI(MAX_PREC);
+const arbFloat arbFloat::E = gen_E();
 
 //Comparison Operators
 
@@ -682,10 +694,13 @@ void arbFloat::negate(){
     }
 }
 
+
+
 void arbFloat::truncate(){
     vector<int> newDigits = vec_truncate(digits, exp);
     digits = newDigits;
 }
+
 
 double arb_to_double(arbFloat num){
     double val = 0;
@@ -764,6 +779,7 @@ int arbFloat::get_sign(){
 
 //Arithmetic operators
 
+//overflow checks suggested by Claude - need to double check them
 arbFloat operator+(const arbFloat& x, const arbFloat& y){
     if (x.digits.empty() || y.digits.empty()){
         throw invalid_argument("One of the values is empty. Error occured in + operator.");
@@ -777,7 +793,7 @@ arbFloat operator+(const arbFloat& x, const arbFloat& y){
 
     arbFloat sum;
 
-    int maxExp = max(left.exp, right.exp) + 1;
+    int maxExp = max(left.exp, right.exp);
     
     int maxFloat = max(left.digits.size() - left.exp, right.digits.size() - right.exp);
 
@@ -803,7 +819,6 @@ arbFloat operator+(const arbFloat& x, const arbFloat& y){
     sum.exp = maxExp;
 
 
-    //need to add the same for the right digits
 
     if (right.sign == left.sign){
         sum.sign = left.sign;
@@ -816,7 +831,11 @@ arbFloat operator+(const arbFloat& x, const arbFloat& y){
             }
         }
         sum.exp = maxExp;
-        if (leftDigits[0] > 0){
+
+        //CHECK
+        if (leftDigits[0] > 9){
+            leftDigits[0] = leftDigits[0] % 10;
+            leftDigits.insert(leftDigits.begin(), 1);
             sum.exp += 1;
         }
         else {
@@ -825,7 +844,7 @@ arbFloat operator+(const arbFloat& x, const arbFloat& y){
                 leftDigits.erase(leftDigits.begin());
                 firstDigit = leftDigits[0];
                 sum.exp -= 1;
-        }
+            }
         }
     }
 
@@ -899,7 +918,6 @@ arbFloat operator-(const arbFloat& x, const arbFloat& y){
 }
 
 
-//Needs minor tweaks
 arbFloat operator*(const arbFloat& x, const arbFloat& y){
     if (x.digits.empty() || y.digits.empty()){
         throw invalid_argument("One of the values is empty. Error occured in - operator.");
@@ -956,7 +974,6 @@ arbFloat operator/(const arbFloat& x, const arbFloat& y){
     den.sign = 0;
     arbFloat d = den;
 
-    //Haven't checked/debugged vec_cut();
     if (d.digits.size() > 17){
         d.digits = vec_round(d.digits, 17, d.exp);
         if (d.digits.size() > 17){
@@ -991,4 +1008,139 @@ arbFloat operator/(const arbFloat& x, const arbFloat& y){
     }
 
     return reciprocal;
+}
+
+//Using Goldschmidt's algorithm instead
+arbFloat rt2(const arbFloat& y){
+    if (y.digits.empty()){
+        throw invalid_argument("One of the values is empty. Error occured in - operator.");
+    }
+    if (y == arbFloat::ZERO){
+        return arbFloat::ZERO;
+    }
+    if (y.sign == 1){
+        throw invalid_argument("Square root of Negative Number");
+    }
+
+    arbFloat den = y;
+    arbFloat d = den;
+
+    if (d.digits.size() > 17){
+        d.digits = vec_round(d.digits, 17, d.exp);
+        if (d.digits.size() > 17){
+            d.exp += 1;
+        }
+    }
+
+    //Need to double check if this works for large numbers
+    double val = 1 / arb_to_double(d);
+    val = sqrt(val);
+
+    arbFloat rt(18, val);
+    rt.sign = 0;
+    int recSize = rt.digits.size();
+    arbFloat check = arbFloat::ZERO;
+    arbFloat half(2, .5);
+    arbFloat half3(2, 1.5);
+
+    if (check == rt){
+        return rt;
+    }
+
+    while (recSize <= MAX_PREC && check != rt){
+        check = rt;
+        rt = rt * (half3  - half * den * rt * rt);
+        rt.truncate();
+        if (rt.digits.size() > MAX_PREC){
+            rt.digits = vec_round(rt.digits, MAX_PREC, rt.exp);
+            if (rt.digits.size() > MAX_PREC){
+                rt.exp += 1;
+            }
+        }
+        recSize = rt.digits.size();
+    }
+    rt = rt * den;
+    return rt;
+};
+
+arbFloat sqr(const arbFloat& x){
+    arbFloat sq = x;
+    sq = sq * sq;
+    return sq;
+}
+
+arbFloat pow(const arbFloat& x, int power){
+    if (power == 0){
+        return arbFloat::ONE;
+    }
+    arbFloat ret = x;
+    if (power > 0){
+        for (int i = 1; i < power; i++){
+            ret = ret * x;
+        }
+    }
+    else if (power < 0){
+        int posPower = power * (-1);
+        for (int i = -1; i > power; i--){
+            ret = ret * x;
+        }
+        ret = arbFloat::ONE / ret;
+    }
+
+    return ret;
+}
+
+//Gauss-Legendre Algorithm
+arbFloat arbFloat::gen_PI(int prec){
+    arbFloat piVal;
+    arbFloat an = arbFloat::ONE;
+    arbFloat bn = arbFloat::ONE / rt2(arbFloat::TWO);
+    arbFloat tn(2, .25);
+    arbFloat pn = an;
+
+    arbFloat an1;
+    arbFloat bn1;
+    arbFloat tn1;
+    arbFloat pn1;
+    cout  << "inside gen_pi\n";
+    int piSize = ceil(log2(MAX_PREC));
+    cout << "piSize = " << piSize << endl;
+    for (int i = 0; i < piSize; i++){
+        cout << "loop iterations: " << i << endl;
+        an1 = (an + bn) / arbFloat::TWO;
+        bn1 = rt2(an * bn);
+        tn1 = tn - pn * (an - an1) * (an - an1);
+        pn1 = arbFloat::TWO * pn;
+        an = an1;
+        bn = bn1;
+        tn = tn1;
+        pn = pn1;
+
+
+        cout << "iter " << i << ": a="; an.print_number();
+        cout << "        b="; bn.print_number();
+        cout << "        t="; tn.print_number();
+        cout << "        p="; pn.print_number();
+        }
+
+    piVal = (an + bn) * (an + bn) / (arbFloat::TWO * arbFloat ::TWO * tn);
+
+    return piVal;
+};
+
+arbFloat arbFloat::gen_E(){
+    arbFloat e = arbFloat::ONE;
+    arbFloat fact = arbFloat::ONE;
+    arbFloat start = arbFloat::ONE;
+
+    arbFloat check(1,0);
+    while (check != e){
+        check = e;
+        fact = fact * start;
+        start = start + arbFloat::ONE;
+        e = e + (arbFloat::ONE / fact);
+        e.truncate();
+    }
+    
+    return e;
 }

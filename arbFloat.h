@@ -41,6 +41,10 @@ class arbFloat {
     arbFloat& operator/=(const arbFloat x);
     friend arbFloat operator/(const arbFloat& x, const arbFloat& y);
 
+    friend arbFloat rt2(const arbFloat& x);
+    friend arbFloat sqr(const arbFloat& x);
+    friend arbFloat pow(const arbFloat& x, int power);
+
     //Comparison operators
     friend bool operator==(const arbFloat& l, const arbFloat& r);
     friend bool operator!=(const arbFloat& l, const arbFloat& r);
@@ -53,6 +57,8 @@ class arbFloat {
     static const arbFloat ZERO;
     static const arbFloat ONE;
     static const arbFloat TWO;
+    static const arbFloat PI;
+    static const arbFloat E;
 
     void round();
     void print_number();
@@ -62,9 +68,13 @@ class arbFloat {
     void print_digits();
     bool is_pos();
 
+    static arbFloat gen_PI(int prec);
+    static arbFloat gen_E();
+
     vector<int> get_digits();
     int get_exp();
     int get_sign();
+
 
     friend double arb_to_double(arbFloat num);
 

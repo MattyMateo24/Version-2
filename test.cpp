@@ -44,7 +44,6 @@ int test_constructors(){
     a5.print_number();
     cout << "----------------------------------------" << endl;
 
-    // Decide whether or not to fix floating point constructors
     // cout << "----------------------------------------" << endl;
     // cout << "a6" << endl;
     // cout << "     Create an arbFloat with a positive float" << endl;
@@ -329,5 +328,69 @@ int main(){
     v.print_number();
     v = v * v2;
     v.print_number();
+
+    arbFloat rt;
+    rt = rt2(arbFloat::TWO);
+    rt.print_number();
+    cout << "Finished testing" << endl;
+
+    arbFloat smallrt(1, 4);
+    smallrt = rt2(smallrt);
+    smallrt.print_number();
+    arbFloat smallrt2(2, 10);
+    smallrt2 = rt2(smallrt2);
+    smallrt2.print_number();
+
+    // cout << "testing pi\n";
+
+    // arbFloat p = arbFloat::PI;
+    // p.print_number();
     return 0;
 }
+
+
+// int main(){
+//     arbFloat e = arbFloat::E;
+//     e.print_number();
+
+//     cout << endl;
+
+//     arbFloat o(6, 362880);
+//     arbFloat o2(7, 3628800);
+//     o = arbFloat::ONE / o;
+//     o2 = arbFloat::ONE / o2;
+//     if (o == o2){
+//         cout << "equal" << endl;
+//     }
+//     else {
+//         cout << "not equal" << endl;
+//     }
+//     o.print_number();
+//     o2.print_number();
+
+//     arbFloat nine(1,-9);
+//     nine.print_number();
+//     nine = nine - arbFloat::ONE;
+//     nine.print_number();
+
+
+//     // arbFloat one(18, 1.0);
+//     // arbFloat big(18, 3628800.0);
+//     // arbFloat result = one / big;
+//     // result.print_number();  // Should print: 2.755731922398589e-6 (not 0)
+
+//     return 0;
+// }
+
+
+// int main(){
+//     arbFloat tw(1,2);
+//     arbFloat r = pow(tw, 2);
+//     r.print_number();
+//     r = rt2(r);
+//     r.print_number();
+//     r = pow(tw, 0);
+//     r.print_number();
+//     r = pow(tw, -4);
+//     r.print_number();
+// }
