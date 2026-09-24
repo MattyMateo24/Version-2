@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-#define MAX_PREC  55
+#define MAX_PREC  60
 
 
 using namespace std;
@@ -59,6 +59,17 @@ class arbFloat {
     static const arbFloat TWO;
     static const arbFloat PI;
     static const arbFloat E;
+
+    //Transcendental functions
+    friend arbFloat sin(const arbFloat& x);
+    friend arbFloat cos(const arbFloat& x);
+    friend arbFloat tan(const arbFloat& x);
+    friend arbFloat arcsin(const arbFloat& x);
+    friend arbFloat arccos(const arbFloat& x);
+    friend arbFloat arctan(const arbFloat& x);
+    friend arbFloat exp(const arbFloat& x);
+    friend arbFloat ln(const arbFloat& x);
+    friend arbFloat mod(const arbFloat& x, const arbFloat& y);
 
     void round();
     void print_number();

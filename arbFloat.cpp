@@ -492,7 +492,7 @@ arbFloat::arbFloat(const arbFloat& x){
 const arbFloat arbFloat::ZERO(1,0);
 const arbFloat arbFloat::ONE(1,1);
 const arbFloat arbFloat::TWO(1,2);
-// const arbFloat arbFloat::PI = gen_PI(MAX_PREC);
+const arbFloat arbFloat::PI = gen_PI(MAX_PREC);
 const arbFloat arbFloat::E = gen_E();
 
 //Comparison Operators
@@ -581,13 +581,6 @@ bool operator<(const arbFloat& l, const arbFloat& r){
             return true;
         }
         else if (left.exp > right.exp){
-            return false;
-        }
-
-        if (left.digits.size() > right.digits.size()){
-            return true;
-        }
-        else if (left.digits.size() < right.digits.size()){
             return false;
         }
 
@@ -1102,11 +1095,8 @@ arbFloat arbFloat::gen_PI(int prec){
     arbFloat bn1;
     arbFloat tn1;
     arbFloat pn1;
-    cout  << "inside gen_pi\n";
     int piSize = ceil(log2(MAX_PREC));
-    cout << "piSize = " << piSize << endl;
     for (int i = 0; i < piSize; i++){
-        cout << "loop iterations: " << i << endl;
         an1 = (an + bn) / arbFloat::TWO;
         bn1 = rt2(an * bn);
         tn1 = tn - pn * (an - an1) * (an - an1);
@@ -1115,12 +1105,6 @@ arbFloat arbFloat::gen_PI(int prec){
         bn = bn1;
         tn = tn1;
         pn = pn1;
-
-
-        cout << "iter " << i << ": a="; an.print_number();
-        cout << "        b="; bn.print_number();
-        cout << "        t="; tn.print_number();
-        cout << "        p="; pn.print_number();
         }
 
     piVal = (an + bn) * (an + bn) / (arbFloat::TWO * arbFloat ::TWO * tn);
@@ -1143,4 +1127,89 @@ arbFloat arbFloat::gen_E(){
     }
     
     return e;
+}
+
+arbFloat mod(const arbFloat& x, const arbFloat& y){
+    if (x.digits.empty() || y.digits.empty()){
+        throw invalid_argument("One of the values is empty. Error occured in - operator.");
+    }
+    if (y == arbFloat::ZERO){
+        throw invalid_argument("Division by zero");
+    }
+    if (y.sign == 1){
+        throw invalid_argument("Modulus by negative number");
+    }
+    if (x == arbFloat::ZERO){
+        return arbFloat::ZERO;
+    }
+
+
+    arbFloat modVal = x;
+    if (modVal.sign == 1){
+        modVal.negate();
+    }
+    while (modVal >= y){
+        modVal = modVal - y;
+    }
+    if (x.sign == 1){
+        modVal = modVal - y;
+    }
+
+
+    return modVal;
+}
+
+
+// arbFloat arbFloat::gen_E(){
+//     arbFloat e = arbFloat::ONE;
+//     arbFloat fact = arbFloat::ONE;
+//     arbFloat start = arbFloat::ONE;
+
+//     arbFloat check(1,0);
+//     while (check != e){
+//         check = e;
+//         fact = fact * start;
+//         start = start + arbFloat::ONE;
+//         e = e + (arbFloat::ONE / fact);
+//         e.truncate();
+//     }
+    
+//     return e;
+// }
+
+arbFloat sin(const arbFloat& x){
+    arbFloat sinVal = mod(x, arbFloat::TWO * arbFloat::PI);
+    arbFloat hold = pow(sinVal, 2);
+    arbFloat fact(1, 1);
+    arbFloat track = sinVal;
+    arbFloat count(1, 1);
+    arbFloat check = arbFloat::ZERO;
+
+    int negate = 1;
+    int whileCount = 1;
+    while (check != sinVal){
+        cout << "whilecount = " << whileCount << endl;
+        whileCount++;
+        check = sinVal;
+        track = track * hold;
+        count = count + arbFloat::ONE;
+        fact = fact * count;
+        count = count + arbFloat::ONE;
+        fact = fact * count;
+
+        if (negate == 1){
+            sinVal = sinVal - track / fact;
+            negate = 0;
+        }
+        else {
+            sinVal = sinVal + track / fact;
+            negate = 1;
+        }
+        cout << "Current sinVal = ";
+        sinVal.print_number();
+
+    }
+
+
+    return sinVal;
 }
